@@ -4,31 +4,30 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from .models import Profile
-from .serializers import ProfileSerializer
+from .models import Account
+from .serializers import AccountSerializer
 
-
-class ProfileView(APIView):
+class AccountView(APIView):
     def get_object(self, pk):
         try:
-            return Profile.objects.get(pk=pk)
-        except Profile.DoesNotExist:
+            return Account.objects.get(pk=pk)
+        except Account.DoesNotExist:
             raise status.HTTP_404_NOT_FOUND
 
     def get(self, request, pk):
-        profile = self.get_object(user=pk)
-        serializer = ProfileSerializer(profile)
+        account = self.get_object(user=pk)
+        serializer = AccountSerializer(Account)
         return Response(serializer.data)
 
     def post(self, request, pk):
-        profile = Profile(**request.data)
-        profile.user = get_user_model().objects.get(pk=pk)
-        profile.save()
+        account = Account(**request.data)
+        account.user = get_user_model().objects.get(pk=pk)
+        account.save()
         return JsonResponse(code=status.HTTP_201_CREATED, data="User successfully created!")
 
     def patch(self, request, pk):
-        profile = self.get_object(pk)
-        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        account = self.get_object(pk)
+        serializer = AccountSerializer(Account, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(code=status.HTTP_200_OK, data=serializer.data)

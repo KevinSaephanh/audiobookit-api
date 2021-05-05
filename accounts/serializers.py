@@ -2,10 +2,10 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from .models import Profile
+from .models import Account
 
 
-class UserSerializer(serializers.ModelSerializer):
+class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password')
@@ -20,10 +20,10 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
-class ProfileSerializer(serializers.ModelSerializer):
+class AccountSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
                 queryset=get_user_model().objects.all())
 
     class Meta:
-        model = Profile
+        model = Account
         fields = ('__all__')
