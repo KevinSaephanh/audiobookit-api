@@ -21,6 +21,6 @@ class FieldValidator:
 
         # Check if password meets regex standard
         regex = re.compile('^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$')
-        if not regex.match(password)
+        if not regex.match(password):
             raise ValidationError(
                 'Password must contain at least one capital letter, one number, and one special character')

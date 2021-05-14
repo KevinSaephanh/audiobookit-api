@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import update_last_login
+from django.http import Http404
 
 from .models import Account
 
@@ -9,7 +11,7 @@ from .models import Account
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('id', 'username', 'email')
+        fields = ('id', 'username', 'email', 'profile', 'books')
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -31,8 +33,22 @@ class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField()
 
     def validate(self, data):
-        account = authenticate(**data)
-        if account and account.is_active:
-            return account
-        else:
-            raise serializers.ValidationError("Wrong credentials provided!")
+        username = data.get('username', None)
+        password = data.get('password', None)
+        account = authenticate(username = username, password = password)
+
+        # Check if account is not null and is active
+        if account is None or account.is_active:
+            raise serializers.ValidationError('Wrong credentials provided!')
+
+        # Get token and return account
+        try:
+            update_last_login(None, account)
+            return {
+                'id': account.get_user_id(),
+                'username': account.username,
+                'email': account.email,
+                'profile': account.profile
+            }
+        except Account.DoesNotExist:
+            raise Http404

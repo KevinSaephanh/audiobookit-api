@@ -20,15 +20,16 @@ class Profile(models.Model):
 
 # Extension of the standard User model
 class Account(AbstractBaseUser):
-    email = models.EmailField(verbose_name="email", min_length=7, max_length=50, unique=True)
-    username = models.CharField(unique=True)
-    password = models.CharField()
+    email = models.EmailField(verbose_name="email", max_length=50, unique=True)
+    username = models.CharField(max_length=20, unique=True)
+    password = models.CharField(max_length=100)
     is_staff = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     profile = models.OneToOneField(
         Profile,
         on_delete=models.CASCADE,
+        default=None,
         primary_key=True
     )
     books = models.ForeignKey(
@@ -46,10 +47,7 @@ class Account(AbstractBaseUser):
         FieldValidator.validatePassword(self.password)
 
     def get_user_id(self):
-        return self.user.pk
-
-    def get_username(self):
-        return self.user.username
+        return self.pk
 
     def get_profile(self):
         return Profile.objects.filter(user=self.user)
@@ -58,4 +56,4 @@ class Account(AbstractBaseUser):
         return Book.objects.filter(user=self.user)
 
     def __str__(self):
-        return str(self.user)
+        return self.user
