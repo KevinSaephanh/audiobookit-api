@@ -1,21 +1,9 @@
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from books.models import Book
 from utils.field_validator import FieldValidator
-
-
-class Profile(models.Model):
-    bio = models.TextField(max_length=300)
-    interests = ArrayField(models.CharField(max_length=100), size=10)
-    profile_pic = models.ImageField(
-        upload_to='userimg/',
-        default='media/defaultPicture.png',
-        max_length=255,
-        null=True,
-        blank=True
-    )
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 # Extension of the standard User model
@@ -26,11 +14,12 @@ class Account(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    profile = models.OneToOneField(
-        Profile,
-        on_delete=models.CASCADE,
-        default=None,
-        primary_key=True
+    profile_pic = models.ImageField(
+        upload_to='userimg/',
+        default='media/defaultPicture.png',
+        max_length=255,
+        null=True,
+        blank=True
     )
     books = models.ForeignKey(
         Book,
@@ -49,11 +38,15 @@ class Account(AbstractBaseUser):
     def get_user_id(self):
         return self.pk
 
-    def get_profile(self):
-        return Profile.objects.filter(user=self.user)
-
     def get_books(self):
         return Book.objects.filter(user=self.user)
+
+    def tokens(self):
+        refresh = RefreshToken.for_user(self)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
 
     def __str__(self):
         return self.user
