@@ -1,6 +1,8 @@
 import pdfplumber
 
+
 class PdfExtractor:
+    @staticmethod
     def getTextFromPdf(self, pdf):
         pdf_obj = pdfplumber.open(pdf)
         list = []
@@ -9,6 +11,7 @@ class PdfExtractor:
         pdf_obj.close()
         return list
 
+    @staticmethod
     def getTextFromPage(self, pdf, page_num):
         pdf_obj = pdfplumber.open(pdf)
         page = pdf_obj.pages[page_num - 1]
@@ -16,6 +19,7 @@ class PdfExtractor:
         pdf_obj.close()
         return text
 
+    @staticmethod
     def getPages(self, pdf):
         pdf_obj = pdfplumber.open(pdf)
         pages = pdf_obj.pages

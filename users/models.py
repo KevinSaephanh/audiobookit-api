@@ -1,13 +1,34 @@
-from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
 from books.models import Book
-from utils.field_validator import FieldValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-# Extension of the standard User model
-class Account(AbstractBaseUser):
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None):
+        if username is None:
+            raise TypeError('Username field should be filled')
+        if email is None:
+            raise TypeError('Email field should be filled')
+
+        user = self.model(username=username, email=self.normalize_email(email))
+        user.set_password(password)
+        user.save()
+
+    def create_superuser(self, username, email, password):
+        if password is None:
+            raise TypeError('Password field should be filled')
+
+        user = self.create_user(username, email, password)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name="email", max_length=50, unique=True)
     username = models.CharField(max_length=20, unique=True)
     password = models.CharField(max_length=100)
@@ -31,9 +52,7 @@ class Account(AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['username', 'email', 'password']
 
-    def clean(self):
-        FieldValidator.validateUsername(self.username)
-        FieldValidator.validatePassword(self.password)
+    objects = UserManager()
 
     def get_user_id(self):
         return self.pk
@@ -49,4 +68,4 @@ class Account(AbstractBaseUser):
         }
 
     def __str__(self):
-        return self.user
+        return self.username
