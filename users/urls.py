@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
 
-# from .views import AccountView
 from .views import RegisterAPI, LoginAPI, VerifyEmail
 
 router = routers.DefaultRouter()

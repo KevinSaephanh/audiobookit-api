@@ -42,23 +42,23 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True
     )
-    books = models.ForeignKey(
-        Book,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
+    # books = models.ForeignKey(
+    #     Book,
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    #     blank=True
+    # )
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['username', 'email', 'password']
+    REQUIRED_FIELDS = ['email', 'password']
 
     objects = UserManager()
 
     def get_user_id(self):
         return self.pk
 
-    def get_books(self):
-        return Book.objects.filter(user=self.user)
+    # def get_books(self):
+    #     return Book.objects.filter(user=self.pk)
 
     def tokens(self):
         refresh = RefreshToken.for_user(self)

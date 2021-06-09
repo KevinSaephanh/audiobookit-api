@@ -4,12 +4,34 @@ from django.urls import reverse
 from rest_framework import generics, permissions
 from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 
 from utils.utils import Util
 from .models import User
-from .serializers import RegisterSerializer, LoginSerializer
+from .permissions import IsOwner
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+
+
+class UserUpdateAPIView(UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser | IsOwner)
+    lookup_field = 'id'
+
+    def perform_update(self, serializer):
+        return
+
+
+class UserDestroyAPIView(DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
+    lookup_field = 'id'
+
+    def perform_destroy(self, instance):
+        return
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -61,10 +83,10 @@ class VerifyEmail(generics.GenericAPIView):
             payload = jwt.decode(token, settings.SECRET_KEY)
             user = User.objects.get(id=payload['user_id'])
 
+            # Set user to active if not already
             if not user.is_active:
                 user.is_active = True
                 user.save()
-
             return JsonResponse({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
         except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Activation link has expired'}, status=status.HTTP_400_BAD_REQUEST)
